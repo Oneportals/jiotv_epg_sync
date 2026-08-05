@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  jiotv-epg-sync:
+    build: .
+    container_name: jiotv-epg-sync
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    environment:
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - JIOTV_BACKEND_URL=${JIOTV_BACKEND_URL:-https://oneportals.com}
+      - SOCKS_PROXY=${SOCKS_PROXY}
