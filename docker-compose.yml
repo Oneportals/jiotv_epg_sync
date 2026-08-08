@@ -4,6 +4,7 @@ services:
   jiotv-epg-sync:
     build: .
     container_name: jiotv-epg-sync
+    network_mode: 'container:tailscale-kn2o0ydo5f9t0wh0lwwnc2fq'
     restart: unless-stopped
     deploy:
       resources:
