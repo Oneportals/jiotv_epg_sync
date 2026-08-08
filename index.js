@@ -89,7 +89,11 @@ async function fetchEPGForChannel(channelId, offset) {
     });
     if (!res.ok) {
       if (res.status === 404) return []; // Non-catchup channel
-      throw new Error(`HTTP ${res.status}`);
+      let errorBody = '';
+      try {
+        errorBody = await res.text();
+      } catch (e) {}
+      throw new Error(`HTTP ${res.status} - ${errorBody.substring(0, 200)}`);
     }
     const data = await res.json();
     return data.epg || [];
