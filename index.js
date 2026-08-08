@@ -157,15 +157,18 @@ async function runSyncWithRetry() {
           const promises = chunk.map(async (ch) => {
             const epgItems = await fetchEPGForChannel(ch.channel_id, offset);
             return epgItems.map((item) => ({
-              channel_id: ch.channel_id,
+              id: `${ch.channel_id}_${item.startEpoch || item.start}`,
+              channel_id: String(ch.channel_id),
+              title: item.showname || 'Unknown',
               showname: item.showname,
               description: item.description || '',
-              start: item.startEpoch ? new Date(item.startEpoch).toISOString() : (item.start ? new Date(item.start).toISOString() : null),
+              since: item.startEpoch ? new Date(item.startEpoch).toISOString() : (item.start ? new Date(item.start).toISOString() : null),
               till: item.endEpoch ? new Date(item.endEpoch).toISOString() : (item.end ? new Date(item.end).toISOString() : null),
-              icon: item.episodeThumbnail ? `https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?icon=${item.episodeThumbnail}` : (item.icon ? `https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?icon=${item.icon}` : null),
-              genre: (item.showGenre && item.showGenre.length > 0) ? item.showGenre[0] : (item.showGenre || ''),
-              srno: item.srno || 0
-            })).filter(rec => rec.start && rec.till);
+              image: item.episodeThumbnail ? `https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?icon=${item.episodeThumbnail}` : (item.icon ? `https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?icon=${item.icon}` : null),
+              day_offset: offset,
+              episode_num: item.episode_num || null,
+              genre: (item.showGenre && item.showGenre.length > 0) ? item.showGenre[0] : (item.showGenre || '')
+            })).filter(rec => rec.since && rec.till);
           });
 
           const results = await Promise.all(promises);
@@ -183,7 +186,7 @@ async function runSyncWithRetry() {
           const batch = allRecords.slice(i, i + batchSize);
           const { error } = await supabase
             .from('jiotv_epg')
-            .upsert(batch, { onConflict: 'channel_id,start' });
+            .upsert(batch, { onConflict: 'id' });
 
           if (error) {
             console.error(`  [Supabase Upsert Error] Batch ${i} to ${i + batchSize}: ${error.message}`);
