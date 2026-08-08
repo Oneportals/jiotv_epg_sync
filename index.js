@@ -31,11 +31,17 @@ let proxyAgent = null;
 async function initProxy() {
   if (SOCKS_PROXY) {
     try {
-      const { SocksProxyAgent } = await import('socks-proxy-agent');
-      proxyAgent = new SocksProxyAgent(SOCKS_PROXY);
-      console.log(`Using SOCKS5 proxy for Jio TV EPG: ${SOCKS_PROXY}`);
+      if (SOCKS_PROXY.startsWith('http')) {
+        const { HttpsProxyAgent } = await import('https-proxy-agent');
+        proxyAgent = new HttpsProxyAgent(SOCKS_PROXY);
+        console.log(`Using HTTP/HTTPS proxy for Jio TV EPG: ${SOCKS_PROXY}`);
+      } else {
+        const { SocksProxyAgent } = await import('socks-proxy-agent');
+        proxyAgent = new SocksProxyAgent(SOCKS_PROXY);
+        console.log(`Using SOCKS proxy for Jio TV EPG: ${SOCKS_PROXY}`);
+      }
     } catch (e) {
-      console.warn("WARNING: SOCKS_PROXY is defined but 'socks-proxy-agent' package failed to load.", e.message);
+      console.warn("WARNING: SOCKS_PROXY is defined but proxy agent failed to load.", e.message);
     }
   }
 }
