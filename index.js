@@ -161,10 +161,10 @@ async function runSyncWithRetry() {
               showname: item.showname,
               description: item.description || '',
               episode_num: item.episode_num || 0,
-              start: item.start ? new Date(item.start).toISOString() : null,
-              till: item.end ? new Date(item.end).toISOString() : null,
-              icon: item.icon ? `https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?icon=${item.icon}` : null,
-              genre: item.showGenre || '',
+              start: item.startEpoch ? new Date(item.startEpoch).toISOString() : (item.start ? new Date(item.start).toISOString() : null),
+              till: item.endEpoch ? new Date(item.endEpoch).toISOString() : (item.end ? new Date(item.end).toISOString() : null),
+              icon: item.episodeThumbnail ? `https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?icon=${item.episodeThumbnail}` : (item.icon ? `https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?icon=${item.icon}` : null),
+              genre: (item.showGenre && item.showGenre.length > 0) ? item.showGenre[0] : (item.showGenre || ''),
               srno: item.srno || 0
             })).filter(rec => rec.start && rec.till);
           });
