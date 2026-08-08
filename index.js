@@ -160,7 +160,6 @@ async function runSyncWithRetry() {
               channel_id: ch.channel_id,
               showname: item.showname,
               description: item.description || '',
-              episode_num: item.episode_num || 0,
               start: item.startEpoch ? new Date(item.startEpoch).toISOString() : (item.start ? new Date(item.start).toISOString() : null),
               till: item.endEpoch ? new Date(item.endEpoch).toISOString() : (item.end ? new Date(item.end).toISOString() : null),
               icon: item.episodeThumbnail ? `https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?icon=${item.episodeThumbnail}` : (item.icon ? `https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?icon=${item.icon}` : null),
