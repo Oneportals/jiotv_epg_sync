@@ -40,58 +40,25 @@ async function initProxy() {
   }
 }
 
+const nodeFetch = require('node-fetch');
+
 // Custom fetch wrapper supporting SOCKS5 routing via standard https agent
 async function fetchWithProxy(url, options = {}) {
-  if (!proxyAgent) {
-    return fetch(url, options);
+  const fetchOptions = {
+    ...options,
+    headers: {
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Connection': 'keep-alive',
+      ...options.headers
+    }
+  };
+
+  if (proxyAgent) {
+    fetchOptions.agent = proxyAgent;
   }
 
-  return new Promise((resolve, reject) => {
-    const parsedUrl = urlModule.parse(url);
-    const reqOptions = {
-      protocol: parsedUrl.protocol,
-      hostname: parsedUrl.hostname,
-      port: parsedUrl.port,
-      path: parsedUrl.path,
-      method: options.method || 'GET',
-      headers: {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Connection': 'keep-alive',
-        ...options.headers
-      },
-      agent: proxyAgent,
-      servername: parsedUrl.hostname, // Important for SNI through proxy
-      rejectUnauthorized: false
-    };
-
-    const req = https.request(reqOptions, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          resolve({
-            ok: res.statusCode >= 200 && res.statusCode < 300,
-            status: res.statusCode,
-            json: () => Promise.resolve(JSON.parse(data)),
-            text: () => Promise.resolve(data)
-          });
-        } catch (e) {
-          const errorMsg = e instanceof Error ? e.message : String(e);
-          reject(new Error(`Failed to parse response JSON: ${errorMsg}`));
-        }
-      });
-    });
-
-    req.on('error', (err) => {
-      reject(err);
-    });
-
-    if (options.body) {
-      req.write(options.body);
-    }
-    req.end();
-  });
+  return nodeFetch(url, fetchOptions);
 }
 
 // Fetch channel list from oneportals backend
